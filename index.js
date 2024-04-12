@@ -9,7 +9,7 @@ const turndownPluginGfm = require('turndown-plugin-gfm');
 
 puppeteer.use(StealthPlugin());
 
-const baseUrl = 'https://docs.youai.ai/youai'; // Replace with the base URL of the website
+const baseUrl = 'https://example.com'; // Starting URL for the crawl
 const outputDir = 'crawled_pages'; // Directory to save the crawled pages
 const maxDepth = 3; // Maximum depth of the crawl
 const concurrency = 5; // Number of concurrent workers
