@@ -1,0 +1,11 @@
+# Ignore package lock file
+package-lock.json
+
+# Ignore Visual Studio Code settings
+.vscode/
+
+# Ignore node modules
+node_modules/
+
+# Ignore crawled pages
+crawled_pages/
