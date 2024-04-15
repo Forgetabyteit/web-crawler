@@ -62,7 +62,7 @@ const timeoutDuration = 30000;
     const links = await page.evaluate(() => Array.from(document.querySelectorAll('a')).map(link => link.href));
     links.forEach(href => {
       const absoluteUrl = new URL(href, baseUrl).href.split('#')[0]; // Normalize URL
-      if (!visitedUrls.has(absoluteUrl)) {
+      if (absoluteUrl.startsWith(baseUrl) && !visitedUrls.has(absoluteUrl)) {
         cluster.queue({ url: absoluteUrl, depth: depth + 1 });
         visitedUrls.add(absoluteUrl);
       }
