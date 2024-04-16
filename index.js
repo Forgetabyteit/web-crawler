@@ -38,6 +38,7 @@ const timeoutDuration = 30000;
     if (depth > maxDepth) return;
 
     await page.goto(url, { waitUntil: 'networkidle0', timeout: timeoutDuration });
+
     const mainContent = await page.evaluate(() => {
       const selectors = ['main', 'article', 'div[role="main"]', 'div.main-content', 'div.content', 'div.page-content'];
       for (const selector of selectors) {
@@ -48,18 +49,24 @@ const timeoutDuration = 30000;
     });
 
     const urlPath = new URL(url).pathname;
-    const sanitizedPath = urlPath.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
-    const fileName = `${sanitizedPath}.md`;
-    const filePath = path.join(outputDir, fileName);
+    const pathParts = urlPath.split('/').filter(part => part);
+    const dirPath = path.join(outputDir, ...pathParts.slice(0, -1));
+    const fileName = `${pathParts[pathParts.length - 1]}.md`;
+    const filePath = path.join(dirPath, fileName);
+
+    fs.mkdirSync(dirPath, { recursive: true });
 
     const turndownService = new TurndownService();
     turndownService.use(turndownPluginGfm.gfm);
     const markdown = turndownService.turndown(mainContent);
-    fs.writeFileSync(filePath, markdown, 'utf8');
 
+    fs.writeFileSync(filePath, markdown, 'utf8');
     console.log(`Saved: ${url}`);
 
-    const links = await page.evaluate(() => Array.from(document.querySelectorAll('a')).map(link => link.href));
+    const links = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('a')).map(link => link.href)
+    );
+
     links.forEach(href => {
       const absoluteUrl = new URL(href, baseUrl).href.split('#')[0]; // Normalize URL
       if (absoluteUrl.startsWith(baseUrl) && !visitedUrls.has(absoluteUrl)) {
@@ -74,6 +81,5 @@ const timeoutDuration = 30000;
   cluster.queue({ url: baseUrl, depth: 0 });
   await cluster.idle();
   await cluster.close();
-
   console.log('Crawling completed.');
 })();
